@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NurseTap (널스 탭) - 간호대생 통합 플랫폼</title>
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #e0f2fe;
+            --accent: #0d9488;
+            --bg-main: #f8fafc;
+            --sidebar-bg: #0f172a;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.5;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Collapsible Sidebar (Collapsed State Default) */
+        .sidebar {
+            width: 250px;
+            background-color: var(--sidebar-bg);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            flex-shrink: 0;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+            position: relative;
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        /* Collapsed Sidebar Style */
+        .sidebar.collapsed {
+            width: 68px;
+            padding: 20px 10px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 20px;
+            min-height: 48px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #0284c7, #0d9488);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .logo-text {
+            font-size: 19px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #f8fafc;
+            white-space: nowrap;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+        }
+
+        .sidebar.collapsed .logo-text,
+        .sidebar.collapsed .nav-section-title,
+        .sidebar.collapsed .nav-text {
+            opacity: 0;
+            display: none;
+        }
+
+        /* Toggle Button placed OUTSIDE on the Main Header/Top Bar */
+        .header-toggle-btn {
+            background: #ffffff;
+            color: #0284c7;
+            border: 1px solid #cbd5e1;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            font-size: 15px;
+            font-weight: 800;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .header-toggle-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 8px rgba(2, 132, 199, 0.25);
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 700;
+            margin: 14px 0 6px 10px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            color: #94a3b8;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+            padding: 12px 0;
+        }
+
+        .nav-item:hover {
+            background-color: #1e293b;
+            color: #f8fafc;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #0284c7, #0d9488);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+        }
+
+        .nav-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: var(--bg-main);
+        }
+
+        .top-notice-bar {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            gap: 16px;
+        }
+
+        .header-left-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .app-status-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px #10b981;
+        }
+
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 13px;
+            border: 1px solid #bae6fd;
+        }
+
+        .content-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px 36px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-banner {
+            background: linear-gradient(135deg, #0f172a 0%, #0284c7 60%, #0d9488 100%);
+            color: white;
+            border-radius: var(--radius-lg);
+            padding: 32px 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 20px -5px rgba(2, 132, 199, 0.2);
+            margin-bottom: 28px;
+        }
+
+        .hero-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+            white-space: normal;
+        }
+
+        .hero-subtitle {
+            font-size: 14px;
+            opacity: 0.95;
+            max-width: 680px;
+            line-height: 1.6;
+            white-space: normal;
+        }
+
+        .app-tiles-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .app-tile {
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--radius-md);
+            padding: 22px 20px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .app-tile:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px rgba(2, 132, 199, 0.12);
+        }
+
+        .tile-icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .tile-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tile-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 2px;
+            white-space: nowrap;
+        }
+
+        .tile-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .horizontal-cards-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .widget-card {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid #cbd5e1;
+            padding: 24px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .widget-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .widget-more {
+            font-size: 13px;
+            color: var(--primary);
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .post-list {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .post-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .post-item:hover {
+            background: #f8fafc;
+        }
+
+        .post-item-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .post-item-comment {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+            white-space: nowrap;
+            flex-shrink: 0;
+            background: var(--primary-light);
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+
+        .notice-horizontal-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notice-horizontal-item {
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            white-space: nowrap;
+        }
+
+        .schedule-horizontal-box {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: white;
+            border-radius: var(--radius-md);
+            padding: 22px 26px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 24px;
+        }
+
+        .schedule-info-main {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .schedule-badge {
+            background: #0284c7;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .schedule-text {
+            font-size: 18px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .schedule-subtext {
+            font-size: 13px;
+            color: #38bdf8;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 20px;
+        }
+
+        .video-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.2s;
+        }
+
+        .video-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+
+        .skill-thumb-box {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .thumb-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.35);
+            transition: background 0.2s;
+        }
+
+        .skill-thumb-box:hover .thumb-overlay {
+            background: rgba(15, 23, 42, 0.2);
+        }
+
+        .play-circle {
+            position: relative;
+            z-index: 2;
+            width: 52px;
+            height: 52px;
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--primary-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .skill-thumb-box:hover .play-circle {
+            transform: scale(1.1);
+            background: var(--primary);
+            color: white;
+        }
+
+        .video-info {
+            padding: 16px;
+        }
+
+        .video-badge {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            background: var(--primary-light);
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .video-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .video-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .poster-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .poster-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 1px solid #cbd5e1;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .poster-header-banner {
+            padding: 22px;
+            color: white;
+            position: relative;
+        }
+
+        .poster-region-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.25);
+            backdrop-filter: blur(4px);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .poster-headline {
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
+        .poster-body {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .poster-info-list {
+            list-style: none;
+            font-size: 13px;
+            color: #334155;
+            margin-bottom: 18px;
+        }
+
+        .poster-info-list li {
+            margin-bottom: 8px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .poster-info-label {
+            font-weight: 700;
+            color: #0f172a;
+            width: 70px;
+            flex-shrink: 0;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: var(--radius-lg);
+            width: 520px;
+            max-width: 92%;
+            padding: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            margin-bottom: 14px;
+            outline: none;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 13px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .comment-item {
+            background: #f8fafc;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .comment-author {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar collapsed" id="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon" onclick="toggleSidebar()" title="사이드바 열기/접기">☝️</div>
+            <div class="logo-text">NurseTap</div>
+        </div>
+
+        <ul class="nav-menu">
+            <div class="nav-section-title">메인 홈</div>
+            <li class="nav-item active" onclick="switchTab('home', this)">
+                <span class="nav-icon">🏥</span>
+                <span class="nav-text">통합 플랫폼 홈</span>
+            </li>
+
+            <div class="nav-section-title">학업 & 핵심술기</div>
+            <li class="nav-item" onclick="switchTab('video', this)">
+                <span class="nav-icon">📹</span>
+                <span class="nav-text">술기 실습 영상</span>
+            </li>
+            <li class="nav-item" onclick="switchTab('theory', this)">
+                <span class="nav-icon">📖</span>
+                <span class="nav-text">술기 프로토콜 요약</span>
+            </li>
+            <li class="nav-item" onclick="switchTab('nursing-core', this)">
+                <span class="nav-icon">💡</span>
+                <span class="nav-text">기본/성인간호 전공</span>
+            </li>
+
+            <div class="nav-section-title">커뮤니티</div>
+            <li class="nav-item" onclick="switchTab('community-student', this)">
+                <span class="nav-icon">💬</span>
+                <span class="nav-text">간호대생 커뮤니티</span>
+            </li>
+            <li class="nav-item" onclick="switchTab('community-job', this)">
+                <span class="nav-icon">💼</span>
+                <span class="nav-text">취업 정보 게시판</span>
+            </li>
+
+            <div class="nav-section-title">진로 & 활동</div>
+            <li class="nav-item" onclick="switchTab('job-info', this)">
+                <span class="nav-icon">🏥</span>
+                <span class="nav-text">병원 지원 & 특강</span>
+            </li>
+            <li class="nav-item" onclick="switchTab('volunteer', this)">
+                <span class="nav-icon">🤝</span>
+                <span class="nav-text">의료 봉사단 모집</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="top-notice-bar">
+            <div class="header-left-group">
+                <button class="header-toggle-btn" onclick="toggleSidebar()" title="사이드바 열기/접기">
+                    <span id="toggleIcon">▶</span>
+                </button>
+                <div class="app-status-tag">
+                    <span class="status-dot"></span>
+                    <span>간호대생 실습 & 취업 메이트 <strong>NurseTap Platform</strong></span>
+                </div>
+            </div>
+            <div class="user-badge" id="topUserBadge">
+                <span>🎓 인증대기중 | 로그인 필요</span>
+            </div>
+        </div>
+
+        <div class="content-container">
+
+            <div id="home" class="tab-content active">
+                <div class="hero-banner">
+                    <div>
+                        <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">간호학생 올인원 스마트 케어</span>
+                        <h2 class="hero-title">🩺 NurseTap 간호학습 & 취업 포털</h2>
+                        <p class="hero-subtitle">핵심 간호 술기 시연 영상부터 임상 프로토콜 요약, 대학병원 입사 원서 접수 및 봉사 활동을 한눈에 이용하세요.</p>
+                    </div>
+                </div>
+
+                <div class="app-tiles-grid">
+                    <div class="app-tile" onclick="switchTabByMenu('video')">
+                        <div class="tile-icon-box" style="background: #e0f2fe; color: #0284c7;">📹</div>
+                        <div class="tile-info">
+                            <div class="tile-title">술기 영상 시청</div>
+                            <div class="tile-desc">유치도뇨, IV 등 실습 시연</div>
+                        </div>
+                    </div>
+
+                    <div class="app-tile" onclick="switchTabByMenu('theory')">
+                        <div class="tile-icon-box" style="background: #ccfbf1; color: #0d9488;">📖</div>
+                        <div class="tile-info">
+                            <div class="tile-title">프로토콜 요약</div>
+                            <div class="tile-desc">시험 직전 핵심 절차 노트</div>
+                        </div>
+                    </div>
+
+                    <div class="app-tile" onclick="switchTabByMenu('community-student')">
+                        <div class="tile-icon-box" style="background: #fef3c7; color: #d97706;">💬</div>
+                        <div class="tile-info">
+                            <div class="tile-title">학생 커뮤니티</div>
+                            <div class="tile-desc">실습 및 학업 정보 공유</div>
+                        </div>
+                    </div>
+
+                    <div class="app-tile" onclick="switchTabByMenu('job-info')">
+                        <div class="tile-icon-box" style="background: #fce7f3; color: #db2777;">🏥</div>
+                        <div class="tile-info">
+                            <div class="tile-title">병원 입사 지원</div>
+                            <div class="tile-desc">채용 공고 및 특강 접수</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="horizontal-cards-row">
+                        <div class="widget-card">
+                            <div class="widget-header">
+                                <div class="widget-title">🔥 커뮤니티 실시간 인기글</div>
+                                <div class="widget-more" onclick="switchTabByMenu('community-student')">전체보기 ></div>
+                            </div>
+                            <div class="post-list">
+                                <div class="post-item" onclick="openPost('유치도뇨 실습 평가 때 풍선 부풀리기 증류수 용량 질문이요!', '2학년 SN', '실습 평가 때 보통 몇 cc 주입해야 하나요? 멸균증류수 말고 식염수 쓰면 감점인가요?', '식염수 쓰시면 결정이 생겨 폐색 위험이 있어 감점 요인입니다! 보통 5~10cc 증류수를 사용합니다.')">
+                                    <div class="post-item-title">[기본간호] 유치도뇨 실습 평가 기준 질문드립니다.</div>
+                                    <div class="post-item-comment">댓글 4</div>
+                                </div>
+                                <div class="post-item" onclick="openPost('2027 상급종합병원 서류전형 스펙 질문 드립니다.', '취준SN', '토익 850 학점 3.8인데 빅5 병원 서류 가능할까요?', '충분히 가능성 있습니다! 자기소개서 스토리텔링에 집중하세요.')">
+                                    <div class="post-item-title">[취업정보] 2027 대학병원 신규간호사 합격 스펙 공유</div>
+                                    <div class="post-item-comment">댓글 8</div>
+                                </div>
+                                <div class="post-item" onclick="openPost('정맥수액주입(IV) 혈관 안 잡힐 때 팁 있나요?', '3학년 SN', '혈관이 얇거나 안 보이는 환자분 주사 놓을 때 팁 공유 부탁드립니다.', '혈관을 가볍게 두드리거나 따뜻한 찜질을 해주고, 투입 직전에 지혈대를 바짝 매는 것이 좋습니다.')">
+                                    <div class="post-item-title">[임상실습] 정맥수액주입(IV) 혈관 천자 노하우 및 팁</div>
+                                    <div class="post-item-comment">댓글 6</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="widget-card">
+                            <div class="widget-header">
+                                <div class="widget-title">📢 포털 공지사항</div>
+                            </div>
+                            <ul class="notice-horizontal-list">
+                                <li class="notice-horizontal-item">
+                                    <span>📌 2학기 기본간호학 실습실 오픈 안내</span>
+                                    <span style="color: #94a3b8; font-size: 11px;">09.21</span>
+                                </li>
+                                <li class="notice-horizontal-item">
+                                    <span>📌 하반기 대학병원 채용 설명회 개최</span>
+                                    <span style="color: #94a3b8; font-size: 11px;">09.19</span>
+                                </li>
+                                <li class="notice-horizontal-item">
+                                    <span>📌 해외 의료봉사단 봉사점수 인정 등록</span>
+                                    <span style="color: #94a3b8; font-size: 11px;">09.15</span>
+                                </li>
+                                <li class="notice-horizontal-item">
+                                    <span>📌 간호사 국가고시 실전 모의고사 접수</span>
+                                    <span style="color: #94a3b8; font-size: 11px;">09.10</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="schedule-horizontal-box">
+                        <div class="schedule-info-main">
+                            <span class="schedule-badge">🎓 나의 학습 & 취업 D-Day</span>
+                            <span class="schedule-text">기본간호 실습시험 D-14</span>
+                        </div>
+                        <div class="schedule-subtext">서울대병원 채용 서류 마감 D-3</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="video" class="tab-content">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 4px;">📹 핵심간호 술기 실습 영상</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">임상 가이드라인 기반 핵심 술기 시연 영상 목록입니다. 클릭 시 시연 팝업이 작동합니다.</p>
+
+                <div class="video-grid">
+                    <div class="video-card">
+                        <div class="skill-thumb-box" style="background-image: url('https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80');" onclick="playSkillVideo('유치도뇨 (Indwelling Catheterization)')">
+                            <div class="thumb-overlay"></div>
+                            <div class="play-circle">▶</div>
+                        </div>
+                        <div class="video-info">
+                            <span class="video-badge">핵심술기 01</span>
+                            <div class="video-title">유치도뇨 (Indwelling Catheterization)</div>
+                            <div class="video-desc">멸균 장갑 착용 및 도뇨관 삽입 프로토콜</div>
+                        </div>
+                    </div>
+
+                    <div class="video-card">
+                        <div class="skill-thumb-box" style="background-image: url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=600&q=80');" onclick="playSkillVideo('단순도뇨 (Straight Catheterization)')">
+                            <div class="thumb-overlay"></div>
+                            <div class="play-circle">▶</div>
+                        </div>
+                        <div class="video-info">
+                            <span class="video-badge">핵심술기 02</span>
+                            <div class="video-title">단순도뇨 (Straight Catheterization)</div>
+                            <div class="video-desc">잔뇨량 측정 및 급성 방광 팽만 완화 술기</div>
+                        </div>
+                    </div>
+
+                    <div class="video-card">
+                        <div class="skill-thumb-box" style="background-image: url('https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=600&q=80');" onclick="playSkillVideo('손위생 및 무균술')">
+                            <div class="thumb-overlay"></div>
+                            <div class="play-circle">▶</div>
+                        </div>
+                        <div class="video-info">
+                            <span class="video-badge">핵심술기 03</span>
+                            <div class="video-title">내과적/외과적 손위생 및 무균 가운 착용</div>
+                            <div class="video-desc">수술실 및 처치실 무균 영역 유지 절차</div>
+                        </div>
+                    </div>
+
+                    <div class="video-card">
+                        <div class="skill-thumb-box" style="background-image: url('https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80');" onclick="playSkillVideo('정맥수액주입 (IV Infusion)')">
+                            <div class="thumb-overlay"></div>
+                            <div class="play-circle">▶</div>
+                        </div>
+                        <div class="video-info">
+                            <span class="video-badge">핵심술기 04</span>
+                            <div class="video-title">정맥수액주입 (IV Infusion)</div>
+                            <div class="video-desc">말초정맥 천자, 지혈대 매기 및 고정법</div>
+                        </div>
+                    </div>
+
+                    <div class="video-card">
+                        <div class="skill-thumb-box" style="background-image: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80');" onclick="playSkillVideo('활력징후 측정 (Vital Signs)')">
+                            <div class="thumb-overlay"></div>
+                            <div class="play-circle">▶</div>
+                        </div>
+                        <div class="video-info">
+                            <span class="video-badge">핵심술기 05</span>
+                            <div class="video-title">활력징후 (Blood Pressure & Vital Signs)</div>
+                            <div class="video-desc">혈압, 맥박, 호흡, 체온 측정 실습 절차</div>
+                        </div>
+                    </div>
+
+                    <div class="video-card">
+                        <div class="skill-thumb-box" style="background-image: url('https://images.unsplash.com/photo-1582719268297-1425c14db431?auto=format&fit=crop&w=600&q=80');" onclick="playSkillVideo('기관 내 흡인 (Suction)')">
+                            <div class="thumb-overlay"></div>
+                            <div class="play-circle">▶</div>
+                        </div>
+                        <div class="video-info">
+                            <span class="video-badge">핵심술기 06</span>
+                            <div class="video-title">기관 내 흡인 (Endotracheal Suction)</div>
+                            <div class="video-desc">기도 개착 유지 및 10~15초 흡인 수칙</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="theory" class="tab-content">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 4px;">📖 술기이론 & 요약</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">술기 시험 평가 시 꼭 점검해야 할 핵심 요약 가이드입니다.</p>
+
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #0284c7; margin-bottom: 8px;">1. 🩺 유치도뇨 (Indwelling Catheterization)</h4>
+                        <p style="font-size: 13px; color: #334155; margin-bottom: 6px;"><strong>• 목적:</strong> 지속적 소변 배설, 정확한 I/O 측정, 방광 세척</p>
+                        <p style="font-size: 13px; color: #334155;"><strong>• 주의사항:</strong> Ballooning 시 멸균증류수 사용 (생리식염수는 결정화 위험), 소변주머니는 방광보다 아래 유지.</p>
+                    </div>
+
+                    <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #0284c7; margin-bottom: 8px;">2. 🧼 무균술 (Aseptic Technique) 및 손위생</h4>
+                        <p style="font-size: 13px; color: #334155;"><strong>• 핵심:</strong> 멸균 영역은 허리 높이 이상 유지, 소독솜은 요도구에서 항문 방향으로 1회만 wipes 사용 후 폐기.</p>
+                    </div>
+
+                    <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #0284c7; margin-bottom: 8px;">3. 💉 정맥수액주입 (IV Infusion)</h4>
+                        <p style="font-size: 13px; color: #334155;"><strong>• 핵심:</strong> 사침 각도 15~30도 유지, 피가 보이면 카테터 밀어 넣고 지혈대 해제 후 수액관 연결.</p>
+                    </div>
+
+                    <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #0284c7; margin-bottom: 8px;">4. 🎈 단순도뇨 (Straight Catheterization)</h4>
+                        <p style="font-size: 13px; color: #334155;"><strong>• 목적:</strong> 급성 방광 팽만 완화, 잔뇨량 측정, 멸균 소변 표본 채취.</p>
+                    </div>
+
+                    <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #0284c7; margin-bottom: 8px;">5. 💨 기관 내 흡인 (Endotracheal Suction)</h4>
+                        <p style="font-size: 13px; color: #334155;"><strong>• 수칙:</strong> 1회 흡인 시간 10~15초 이내 제한 (저산소혈증 예방), 카테터 회전시키며 제거.</p>
+                    </div>
+
+                    <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #0284c7; margin-bottom: 8px;">6. 🩸 혈당검사 (BST)</h4>
+                        <p style="font-size: 13px; color: #334155;"><strong>• 핵심:</strong> 천자 부위 알코올 소독 후 완전 건조된 뒤 채혈 (수치 오차 예방).</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="nursing-core" class="tab-content">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 4px;">💡 기본간호 & 성인간호 전공 핵심</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">중간/기말고사 및 국시 대비 전공 핵심 개념입니다.</p>
+
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #0369a1; margin-bottom: 8px;">1. 🫀 성인간호 - 산소요법 및 체위간호</h4>
+                        <p style="font-size: 13px; color: #334155;">Nasal Cannula(1~6L/min) 및 호흡곤란 시 반좌위(Fowler's position) 취해주기.</p>
+                    </div>
+
+                    <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #0369a1; margin-bottom: 8px;">2. 🧠 신경계 - 의식수준 단계 (GCS 및 LOC)</h4>
+                        <p style="font-size: 13px; color: #334155;">Alert(명료) -> Drowsy(기면) -> Stupor(혼미) -> Semicoma(반혼수) -> Coma(혼수)</p>
+                    </div>
+
+                    <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #0369a1; margin-bottom: 8px;">3. 🫁 호흡기계 - ABGA 정상 범위 요약</h4>
+                        <p style="font-size: 13px; color: #334155;">pH: 7.35~7.45 | PaCO2: 35~45 mmHg | HCO3-: 22~26 mEq/L</p>
+                    </div>
+
+                    <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #0369a1; margin-bottom: 8px;">4. 💊 약리학 - 5 Rights (투약 5대 원칙)</h4>
+                        <p style="font-size: 13px; color: #334155;">Right Patient, Right Drug, Right Dose, Right Route, Right Time</p>
+                    </div>
+
+                    <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #0369a1; margin-bottom: 8px;">5. 🧪 기본간호 - 체액/전해질 균형</h4>
+                        <p style="font-size: 13px; color: #334155;">K+ 정상치: 3.5~5.0 mEq/L (고칼륨혈증 시 T파 증대 및 부정맥 주의)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="community-student" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <h3 style="font-size: 20px; font-weight: 800;">💬 간호대생 커뮤니티</h3>
+                        <p style="font-size: 13px; color: var(--text-muted);">실습 및 시험 학업 고민을 나누어보세요.</p>
+                    </div>
+                    <button class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="openWriteModal()">✏️ 글쓰기</button>
+                </div>
+
+                <div class="post-list">
+                    <div class="post-item" onclick="openPost('유치도뇨 실습 평가 평가 기준 질문드립니다.', '2학년 SN', '실습 평가 때 보통 몇 cc 주입해야 하나요? 멸균증류수 말고 식염수 쓰면 감점인가요?', '식염수 쓰하시면 결정이 생겨 폐색 위험이 있어 감점 요인입니다! 보통 5~10cc 증류수를 사용합니다.')">
+                        <div class="post-item-title">[자유게시판] 유치도뇨 실습 평가 평가 기준 질문드립니다.</div>
+                        <div class="post-item-comment">댓글 4</div>
+                    </div>
+
+                    <div class="post-item" onclick="openPost('정맥수액주입(IV) 혈관 안 잡힐 때 팁 있나요?', '3학년 SN', '혈관이 얇거나 안 보이는 환자분 주사 놓을 때 팁 공유 부탁드립니다.', '혈관을 가볍게 두드리거나 따뜻한 찜질을 해주고, 투입 직전에지혈대를 바짝 매는 것이 좋습니다.')">
+                        <div class="post-item-title">[임상실습] 정맥수액주입(IV) 혈관 안 잡힐 때 팁 있나요?</div>
+                        <div class="post-item-comment">댓글 6</div>
+                    </div>
+
+                    <div class="post-item" onclick="openPost('기본간호학 약리 시험공부 수액 gtt 계산법 정리', '2학년 SN', '수액 방울 수 gtt 공식 헷갈리시는 분들 참고하세요.', '정말 유용해요! 외우기 훨씬 쉽네요.')">
+                        <div class="post-item-title">[학업팁] 기본간호학 약리 시험공부 수액 gtt 계산법 정리</div>
+                        <div class="post-item-comment">댓글 3</div>
+                    </div>
+
+                    <div class="post-item" onclick="openPost('성인간호학 수술 전 간호 체크리스트 공유', '4학년 SN', '수술 전 NPO 및 승낙서 확인 체크리스트 요약본입니다.', '실습 나갈 때 출력해서 잘 쓰겠습니다!')">
+                        <div class="post-item-title">[실습족보] 성인간호학 수술 전 간호 체크리스트 공유</div>
+                        <div class="post-item-comment">댓글 5</div>
+                    </div>
+
+                    <div class="post-item" onclick="openPost('나이팅게일 선서식 및 실습 가운 구매 문의', '1학년 SN', '실습 가운 공동구매 일정 어디서 확인하나요?', '학과 사무실 공지사항이나 학과 학생회 인스타에서 확인해보세요!')">
+                        <div class="post-item-title">[질문게시판] 나이팅게일 선서식 및 실습 가운 구매 문의</div>
+                        <div class="post-item-comment">댓글 2</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="community-job" class="tab-content">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 4px;">💼 취업 게시판</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">병원별 채용 스펙 및 면접 후기를 공유하세요.</p>
+
+                <div class="post-list">
+                    <div class="post-item" onclick="openPost('2027 상급종합병원 서류전형 스펙 질문 드립니다.', '취준SN', '토익 850 학점 3.8인데 빅5 병원 서류 가능할까요?', '충분히 가능성 있습니다! 자기소개서 스토리텔링에 집중하세요.')">
+                        <div class="post-item-title">[취업질문] 2027 상급종합병원 서류전형 스펙 질문 드립니다.</div>
+                        <div class="post-item-comment">댓글 8</div>
+                    </div>
+
+                    <div class="post-item" onclick="openPost('서울대병원 AI 및 심층면접 기출문제 후기', '합격자SN', '작년 서울대병원 인성 및 직무면접 질문 복기 공유합니다.', '면접 준비에 정말 도움됩니다. 감사해요!')">
+                        <div class="post-item-title">[면접후기] 서울대병원 AI 및 심층면접 기출문제 후기</div>
+                        <div class="post-item-comment">댓글 12</div>
+                    </div>
+
+                    <div class="post-item" onclick="openPost('세브란스병원 자소서 항목별 작성 노하우', 'RN멘토', '기독교 정신 및 입사 후 포부 작성 가이드', '멘토님 팁 덕분에 방향 잡았습니다.')">
+                        <div class="post-item-title">[자소서팁] 세브란스병원 자소서 항목별 작성 노하우</div>
+                        <div class="post-item-comment">댓글 9</div>
+                    </div>
+
+                    <div class="post-item" onclick="openPost('삼성서울병원 SSAFY 간호 연계 채용 정보', '취업준비생', '삼성서울병원 채용 서류 작성 시 주의점', '스펙 준비에 필수 참고 자료네요!')">
+                        <div class="post-item-title">[채용정보] 삼성서울병원 SSAFY 간호 연계 채용 정보</div>
+                        <div class="post-item-comment">댓글 4</div>
+                    </div>
+
+                    <div class="post-item" onclick="openPost('아산병원 신규간호사 필기시험 간호학 문제 유형', '신규RN', '성인간호학 및 기본간호학 위주 기출 유형', '필기시험 준비 시 유익합니다.')">
+                        <div class="post-item-title">[필기후기] 아산병원 신규간호사 필기시험 간호학 문제 유형</div>
+                        <div class="post-item-comment">댓글 7</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="job-info" class="tab-content">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 4px;">🏥 병원 지원 & 취업 특강</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">원하는 공고의 지원하기 버튼을 눌러 인적사항 확인 후 접수하세요.</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+                    <div style="background: white; border: 1px solid #cbd5e1; border-radius: 14px; padding: 20px;">
+                        <span style="background: #ef4444; color: white; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">마감 임박 (D-3)</span>
+                        <h4 style="font-size: 17px; font-weight: 700; margin: 10px 0 6px; color: #0f172a;">서울대학교병원 2027 신규간호사 채용</h4>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">모집인원: 000명 | 마감일: ~ 09.28까지</p>
+                        <button class="btn-primary" onclick="openApplyModal('서울대학교병원 신규간호사 채용')">📝 병원 입사 지원하기</button>
+                    </div>
+
+                    <div style="background: white; border: 1px solid #cbd5e1; border-radius: 14px; padding: 20px;">
+                        <span style="background: #0284c7; color: white; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">상시 채용</span>
+                        <h4 style="font-size: 17px; font-weight: 700; margin: 10px 0 6px; color: #0f172a;">신촌 세브란스병원 신규간호사 채용</h4>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">모집인원: 000명 | 기독교 정신 우수자 우대</p>
+                        <button class="btn-primary" onclick="openApplyModal('신촌 세브란스병원 채용')">📝 병원 입사 지원하기</button>
+                    </div>
+
+                    <div style="background: white; border: 1px solid #cbd5e1; border-radius: 14px; padding: 20px;">
+                        <span style="background: #0284c7; color: white; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">공채 예정</span>
+                        <h4 style="font-size: 17px; font-weight: 700; margin: 10px 0 6px; color: #0f172a;">삼성서울병원 2027 신규간호사 공채</h4>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">모집인원: 00명 | 서류접수 개시 예정</p>
+                        <button class="btn-primary" onclick="openApplyModal('삼성서울병원 공채')">📝 병원 입사 지원하기</button>
+                    </div>
+
+                    <div style="background: white; border: 1px solid #cbd5e1; border-radius: 14px; padding: 20px;">
+                        <span style="background: #0284c7; color: white; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">특강 신청</span>
+                        <h4 style="font-size: 17px; font-weight: 700; margin: 10px 0 6px; color: #0f172a;">2026 간호학과 취업 성공 자소서 특강</h4>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">일시: 10월 5일 온라인 Zoom | 전직 병원 인사담당자</p>
+                        <button class="btn-primary" style="background: #0369a1;" onclick="openApplyModal('취업 성공 자소서 특강')">🎓 특강 참가 신청하기</button>
+                    </div>
+
+                    <div style="background: white; border: 1px solid #cbd5e1; border-radius: 14px; padding: 20px;">
+                        <span style="background: #0284c7; color: white; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">특강 신청</span>
+                        <h4 style="font-size: 17px; font-weight: 700; margin: 10px 0 6px; color: #0f172a;">AI 모의면접 및 블라인드 면접 전략</h4>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">일시: 10월 12일 오후 7시 | 1:1 피드백 포함</p>
+                        <button class="btn-primary" style="background: #0369a1;" onclick="openApplyModal('AI 모의면접 특강')">🎓 특강 참가 신청하기</button>
+                    </div>
+
+                    <div style="background: white; border: 1px solid #cbd5e1; border-radius: 14px; padding: 20px;">
+                        <span style="background: #0d9488; color: white; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">멘토링</span>
+                        <h4 style="font-size: 17px; font-weight: 700; margin: 10px 0 6px; color: #0f172a;">빅5 병원 현직 선배 간호사 취업 멘토링</h4>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">소수 정예 오프라인 멘토링 모임</p>
+                        <button class="btn-primary" style="background: #0d9488;" onclick="openApplyModal('현직 선배 멘토링')">🤝 멘토링 신청하기</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="volunteer" class="tab-content">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 4px;">🤝 의료 & 간호 봉사단 모집 포스터</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">지역, 일시, 장소, 활동 내용이 명확하게 반영된 디자인 홍보 포스터입니다.</p>
+
+                <div class="poster-grid">
+                    <div class="poster-card">
+                        <div class="poster-header-banner" style="background: linear-gradient(135deg, #0d9488, #0f766e);">
+                            <span class="poster-region-badge">📍 동남아 (베트남/캄보디아)</span>
+                            <div class="poster-headline">2026 동계 해외 의료 봉사단 단원 모집</div>
+                        </div>
+                        <div class="poster-body">
+                            <ul class="poster-info-list">
+                                <li><span class="poster-info-label">📅 일시:</span> 2026년 12월 15일 ~ 12월 24일 (9박 10일)</li>
+                                <li><span class="poster-info-label">🏫 장소:</span> 베트남 다낭 및 인근 오지 마을</li>
+                                <li><span class="poster-info-label">🩺 하는 일:</span> 기초 건강검진 보조, 위생교육, 의약품 수혈 관리</li>
+                                <li><span class="poster-info-label">🎓 대상:</span> 간호학과 재학생 (VMS 80시간 인정)</li>
+                            </ul>
+                            <button class="btn-primary" style="background: #0d9488;" onclick="openApplyModal('동남아 해외 의료봉사단')">봉사단 지원 신청하기</button>
+                        </div>
+                    </div>
+
+                    <div class="poster-card">
+                        <div class="poster-header-banner" style="background: linear-gradient(135deg, #0284c7, #0369a1);">
+                            <span class="poster-region-badge">📍 인천 / 경기 지역</span>
+                            <div class="poster-headline">지역사회 어르신 만성질환 케어 봉사단</div>
+                        </div>
+                        <div class="poster-body">
+                            <ul class="poster-info-list">
+                                <li><span class="poster-info-label">📅 일시:</span> 2026년 10월~11월 매주 토요일 (09:00~13:00)</li>
+                                <li><span class="poster-info-label">🏫 장소:</span> 인천 미추홀구 종합사회복지관</li>
+                                <li><span class="poster-info-label">🩺 하는 일:</span> 어르신 혈압/혈당 측정, 투약 지도, 건강상담 지원</li>
+                                <li><span class="poster-info-label">🎓 대상:</span> 간호대생 1~4학년 (회당 VMS 4시간)</li>
+                            </ul>
+                            <button class="btn-primary" onclick="openApplyModal('인천 지역 어르신 봉사단')">봉사단 지원 신청하기</button>
+                        </div>
+                    </div>
+
+                    <div class="poster-card">
+                        <div class="poster-header-banner" style="background: linear-gradient(135deg, #db2777, #be185d);">
+                            <span class="poster-region-badge">📍 서울 대학병원 소아병동</span>
+                            <div class="poster-headline">입원 환아와 함께하는 정서지원 봉사</div>
+                        </div>
+                        <div class="poster-body">
+                            <ul class="poster-info-list">
+                                <li><span class="poster-info-label">📅 일시:</span> 2026년 10월 중 매주 일요일 오후 2시</li>
+                                <li><span class="poster-info-label">🏫 장소:</span> 서울 주요 대학병원 소아청소년과 병동</li>
+                                <li><span class="poster-info-label">🩺 하는 일:</span> 소아 환아 책읽기, 미술치료 보조, 병실 놀이 케어</li>
+                                <li><span class="poster-info-label">🎓 대상:</span> 간호학과 재학생 20명 모집</li>
+                            </ul>
+                            <button class="btn-primary" style="background: #db2777;" onclick="openApplyModal('소아병동 정서지원 봉사')">봉사단 지원 신청하기</button>
+                        </div>
+                    </div>
+
+                    <div class="poster-card">
+                        <div class="poster-header-banner" style="background: linear-gradient(135deg, #d97706, #b45309);">
+                            <span class="poster-region-badge">📍 전국 주요 도심</span>
+                            <div class="poster-headline">대시민 CPR & 응급처치 서포터즈 봉사단</div>
+                        </div>
+                        <div class="poster-body">
+                            <ul class="poster-info-list">
+                                <li><span class="poster-info-label">📅 일시:</span> 2026년 10월 18일 (토) 10:00 ~ 17:00</li>
+                                <li><span class="poster-info-label">🏫 장소:</span> 도심 광장 시민 체험 부스</li>
+                                <li><span class="poster-info-label">🩺 하는 일:</span> 일반 시민 대상 심폐소생술(CPR) 및 AED 사용 실습 조교</li>
+                                <li><span class="poster-info-label">🎓 대상:</span> BLS 자격증 보유 간호학생 우대</li>
+                            </ul>
+                            <button class="btn-primary" style="background: #d97706;" onclick="openApplyModal('CPR 응급처치 서포터즈')">봉사단 지원 신청하기</button>
+                        </div>
+                    </div>
+
+                    <div class="poster-card">
+                        <div class="poster-header-banner" style="background: linear-gradient(135deg, #e11d48, #be123c);">
+                            <span class="poster-region-badge">📍 대학교 캠퍼스</span>
+                            <div class="poster-headline">캠퍼스 생명나눔 헌혈 캠페인 서포터즈</div>
+                        </div>
+                        <div class="poster-body">
+                            <ul class="poster-info-list">
+                                <li><span class="poster-info-label">📅 일시:</span> 2026년 10월 20일 ~ 10월 22일 (3일간)</li>
+                                <li><span class="poster-info-label">🏫 장소:</span> 캠퍼스 중앙광장 헌혈버스 앞</li>
+                                <li><span class="poster-info-label">🩺 하는 일:</span> 헌혈 홍보, 문진 안내, 헌혈 후 휴식자 상태 관찰</li>
+                                <li><span class="poster-info-label">🎓 대상:</span> 간호대 재학생 선착순 15명</li>
+                            </ul>
+                            <button class="btn-primary" style="background: #e11d48;" onclick="openApplyModal('헌혈 캠페인 서포터즈')">봉사단 지원 신청하기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="authModal" style="display: flex;">
+        <div class="modal-box">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="width: 56px; height: 56px; background: #e0f2fe; color: #0284c7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 12px;">🩺</div>
+                <h3 style="font-size: 18px; font-weight: 800; color: #0f172a;">간호학생 인증</h3>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">NurseTap 포털은 간호대생 전용 공간입니다.</p>
+            </div>
+
+            <label class="form-label">이름</label>
+            <input type="text" id="authName" class="form-input" placeholder="이름을 입력하세요 (예: 이서연)">
+
+            <label class="form-label">대학교 및 학과</label>
+            <input type="text" id="authSchool" class="form-input" placeholder="학교 및 학과 (예: 한국대학교 간호학과)">
+
+            <label class="form-label">학번 및 학년</label>
+            <input type="text" id="authId" class="form-input" placeholder="학번/학년 (예: 20261234 / 2학년)">
+
+            <button class="btn-primary" onclick="submitAuthInfo()">인증 완료 및 입장하기</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="skillVideoModal" style="display: none;">
+        <div class="modal-box" style="width: 600px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 id="skillVideoTitle" style="font-size: 17px; font-weight: 800; color: #0f172a;">술기 시연 영상</h3>
+                <span style="font-size: 20px; cursor: pointer; color: #94a3b8;" onclick="closeSkillVideoModal()">✕</span>
+            </div>
+            <div style="width: 100%; height: 280px; background: #0f172a; border-radius: 12px; display: flex; flex-direction: column; align- items: center; justify-content: center; color: white; margin-bottom: 16px; position: relative;">
+                <div style="font-size: 48px; color: #38bdf8; margin-bottom: 10px;">🩺</div>
+                <div id="skillVideoSub" style="font-weight: 700; font-size: 16px;">술기 실습 시연 플레이어</div>
+                <p style="font-size: 12px; opacity: 0.8; margin-top: 6px;">임상 표준 프로토콜 영상 재생 중 (1080p HD)</p>
+            </div>
+            <button class="btn-primary" onclick="closeSkillVideoModal()">시청 완료</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="postModal" style="display: none;">
+        <div class="modal-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span id="postDetailCategory" style="font-size: 11px; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 3px 8px; border-radius: 4px;">게시글</span>
+                <span style="font-size: 18px; cursor: pointer; color: #94a3b8;" onclick="closePostModal()">✕</span>
+            </div>
+
+            <h3 id="postDetailTitle" style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">글 제목</h3>
+            <div id="postDetailAuthor" style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">작성자</div>
+
+            <div id="postDetailBody" style="font-size: 13px; color: #334155; line-height: 1.6; padding: 12px; background: #f8fafc; border-radius: 8px; margin-bottom: 14px;">
+                본문 내용
+            </div>
+
+            <div style="font-weight: 700; font-size: 13px; color: #0f172a; margin-bottom: 8px;">💬 댓글 및 답변 목록</div>
+            <div id="commentList">
+                <div class="comment-item">
+                    <div class="comment-author">💡 답변</div>
+                    <div>답변 내용입니다.</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+                <label class="form-label">답글 달기</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="newCommentInput" class="form-input" style="margin-bottom:0;" placeholder="답글이나 댓글을 입력하세요...">
+                    <button class="btn-primary" style="width: 80px; padding: 10px;" onclick="addComment()">등록</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="applyModal" style="display: none;">
+        <div class="modal-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 id="applyTargetTitle" style="font-size: 17px; font-weight: 800; color: #0f172a;">지원서 작성</h3>
+                <span style="font-size: 18px; cursor: pointer; color: #94a3b8;" onclick="closeApplyModal()">✕</span>
+            </div>
+
+            <label class="form-label">지원자 이름</label>
+            <input type="text" id="applyNameInput" class="form-input">
+
+            <label class="form-label">학교 / 학번 / 학년</label>
+            <input type="text" id="applyInfoInput" class="form-input">
+
+            <label class="form-label">연락처</label>
+            <input type="text" class="form-input" placeholder="010-XXXX-XXXX">
+
+            <label class="form-label">지원 동기 및 메시지</label>
+            <textarea class="form-textarea" rows="3" placeholder="지원 동기 및 각오를 입력하세요."></textarea>
+
+            <button class="btn-primary" onclick="submitApplication()">제출 및 최종 지원하기</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="writeModal" style="display: none;">
+        <div class="modal-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 17px; font-weight: 800; color: #0f172a;">게시글 작성</h3>
+                <span style="font-size: 18px; cursor: pointer; color: #94a3b8;" onclick="closeWriteModal()">✕</span>
+            </div>
+
+            <label class="form-label">제목</label>
+            <input type="text" id="newPostTitle" class="form-input" placeholder="제목을 입력하세요">
+
+            <label class="form-label">내용</label>
+            <textarea id="newPostBody" class="form-textarea" rows="4" placeholder="내용을 입력하세요"></textarea>
+
+            <button class="btn-primary" onclick="submitNewPost()">게시글 등록하기</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUserName = "이서연";
+        let currentUserSchool = "한국대학교 간호학과";
+        let currentUserId = "20261234 (2학년)";
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            sidebar.classList.toggle('collapsed');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                icon.innerText = '▶';
+            } else {
+                icon.innerText = '◀';
+            }
+        }
+
+        function switchTab(tabId, element) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            if (element) element.classList.add('active');
+        }
+
+        function switchTabByMenu(tabId) {
+            const targetNav = document.querySelector(`.nav-item[onclick*="${tabId}"]`);
+            if (targetNav) {
+                switchTab(tabId, targetNav);
+            }
+        }
+
+        function submitAuthInfo() {
+            const nameVal = document.getElementById('authName').value.trim();
+            const schoolVal = document.getElementById('authSchool').value.trim();
+            const idVal = document.getElementById('authId').value.trim();
+
+            if (nameVal) currentUserName = nameVal;
+            if (schoolVal) currentUserSchool = schoolVal;
+            if (idVal) currentUserId = idVal;
+
+            updateUserBadge();
+            document.getElementById('authModal').style.display = 'none';
+        }
+
+        function updateUserBadge() {
+            const badge = document.getElementById('topUserBadge');
+            badge.innerHTML = `<span>🎓 인증완료 | ${currentUserName} (${currentUserSchool})</span>`;
+        }
+
+        function playSkillVideo(skillName) {
+            document.getElementById('skillVideoTitle').innerText = `[술기 시연] ${skillName}`;
+            document.getElementById('skillVideoSub').innerText = `${skillName} 시연 중`;
+            document.getElementById('skillVideoModal').style.display = 'flex';
+        }
+
+        function closeSkillVideoModal() {
+            document.getElementById('skillVideoModal').style.display = 'none';
+        }
+
+        function openPost(title, author, body, comment) {
+            document.getElementById('postDetailTitle').innerText = title;
+            document.getElementById('postDetailAuthor').innerText = author + ' | 작성글';
+            document.getElementById('postDetailBody').innerText = body;
+            
+            const commentList = document.getElementById('commentList');
+            commentList.innerHTML = `<div class="comment-item"><div class="comment-author">💡 답변</div><div>${comment}</div></div>`;
+            document.getElementById('postModal').style.display = 'flex';
+        }
+
+        function closePostModal() {
+            document.getElementById('postModal').style.display = 'none';
+        }
+
+        function addComment() {
+            const input = document.getElementById('newCommentInput');
+            if (input.value.trim() === '') return;
+
+            const commentList = document.getElementById('commentList');
+            const newComment = document.createElement('div');
+            newComment.className = 'comment-item';
+            newComment.innerHTML = `<div class="comment-author">🎓 ${currentUserName}</div><div>${input.value}</div>`;
+            commentList.appendChild(newComment);
+            input.value = '';
+        }
+
+        function openApplyModal(title) {
+            document.getElementById('applyTargetTitle').innerText = `[${title}] 지원서 접수`;
+            document.getElementById('applyNameInput').value = currentUserName;
+            document.getElementById('applyInfoInput').value = `${currentUserSchool} / ${currentUserId}`;
+            document.getElementById('applyModal').style.display = 'flex';
+        }
+
+        function closeApplyModal() {
+            document.getElementById('applyModal').style.display = 'none';
+        }
+
+        function submitApplication() {
+            alert(`${currentUserName}님의 지원서 접수가 성공적으로 완료되었습니다!`);
+            closeApplyModal();
+        }
+
+        function openWriteModal() {
+            document.getElementById('writeModal').style.display = 'flex';
+        }
+
+        function closeWriteModal() {
+            document.getElementById('writeModal').style.display = 'none';
+        }
+
+        function submitNewPost() {
+            const title = document.getElementById('newPostTitle').value;
+            const body = document.getElementById('newPostBody').value;
+
+            if (!title || !body) {
+                alert('제목과 내용을 모두 입력해주세요.');
+                return;
+            }
+
+            alert('게시글이 성공적으로 등록되었습니다.');
+            closeWriteModal();
+        }
+    </script>
+</body>
+</html>
